@@ -14,7 +14,7 @@ So far I have not found project that is able to do:
   - update version info in code
   - create commit about new version being set
   - optionally push it
-  
+
 This project is my attempt to rectify the problem.
 
 ## Related

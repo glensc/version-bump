@@ -47,7 +47,7 @@ make_release() {
 bump_dev() {
 	local prev version
 	prev=$(current_version)
-	prev=$(preg_quote)
+	prev=$(preg_quote "$prev")
 
 	# bump revision
 	bump patch --no-commit
