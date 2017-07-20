@@ -1,9 +1,11 @@
 #!/bin/sh
-set -xe
+set -e
 
 # get current version using bump
 current_version() {
-	bump current | awk '{print $NF}'
+	local out
+	out=$(bump current)
+	echo "$out" | awk '{print $NF}'
 }
 
 # get previous version from changelog
@@ -25,10 +27,12 @@ preg_quote() {
 # - commit changelog
 # - commit annotated tag
 make_release() {
-	local date=$(date +%Y-%m-%d)
-	local version=$(current_version)
-	local ver=$(preg_quote "$version")
-	local prev=$(prev_version | preg_quote)
+	local date version ver prev
+
+	date=$(date +%Y-%m-%d)
+	version=$(current_version)
+	ver=$(preg_quote "$version")
+	prev=$(prev_version | preg_quote)
 
 	sed -i -re "s,^(## \[$ver\]).*,\1 - $date," CHANGELOG.md
 	sed -i -re "s,^(\[$ver\]:.*compare/$prev)\.\.\..*,\1...$ver," CHANGELOG.md
@@ -41,12 +45,14 @@ make_release() {
 # - open new version section in changelog
 # - create commit about new version being set
 bump_dev() {
-	local prev=$(current_version | preg_quote)
+	local prev version
+	prev=$(current_version)
+	prev=$(preg_quote)
 
 	# bump revision
 	bump patch --no-commit
 
-	local version=$(current_version)
+	version=$(current_version)
 
 	local diff_link=$(grep "^\[$prev\]:" CHANGELOG.md)
 	diff_link=$(echo "$diff_link" | sed -re "s,^\[$prev\]:(.*compare)/.+,[$version]: \1/$prev...master,")
