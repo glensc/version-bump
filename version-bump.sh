@@ -37,7 +37,7 @@ make_release() {
 	sed -i -re "s,^(## \[$ver\]).*,\1 - $date," CHANGELOG.md
 	sed -i -re "s,^(\[$ver\]:.*compare/$prev)\.\.\..*,\1...$ver," CHANGELOG.md
 
-	git commit -am "set $version release date"
+	git commit -m "set $version release date" CHANGELOG.md
 	git tag -m "release $version" $version
 }
 
