@@ -27,25 +27,28 @@ preg_quote() {
 # - commit changelog
 # - commit annotated tag
 make_release() {
-	local date version ver prev
+	local date version ver prev v
 
 	date=$(date +%Y-%m-%d)
 	version=$(current_version)
 	ver=$(preg_quote "$version")
 	prev=$(prev_version | preg_quote)
 
+	# detect v prefix
+	v=$(sed -nre "s/^\[$ver\]:.*compare\/(.*)$prev\.\.\..*/\1/p" CHANGELOG.md)
+
 	sed -i -re "s,^(## \[$ver\]).*,\1 - $date," CHANGELOG.md
-	sed -i -re "s,^(\[$ver\]:.*compare/$prev)\.\.\..*,\1...$ver," CHANGELOG.md
+	sed -i -re "s,^(\[$ver\]:.*compare/$v$prev)\.\.\..*,\1...$v$ver," CHANGELOG.md
 
 	git commit -m "set $version release date" CHANGELOG.md
-	git tag -m "release $version" $version
+	git tag -m "release $version" $v$version
 }
 
 # open dev version:
 # - open new version section in changelog
 # - create commit about new version being set
 bump_dev() {
-	local prev version
+	local prev version v
 	prev=$(current_version)
 	prev=$(preg_quote "$prev")
 
@@ -54,8 +57,11 @@ bump_dev() {
 
 	version=$(current_version)
 
+	# detect v prefix
+	v=$(sed -nre "s/^\[$prev\]:.*compare\/.*\.\.\.(v)?$prev/\1/p" CHANGELOG.md)
+
 	local diff_link=$(grep "^\[$prev\]:" CHANGELOG.md)
-	diff_link=$(echo "$diff_link" | sed -re "s,^\[$prev\]:(.*compare)/.+,[$version]: \1/$prev...master,")
+	diff_link=$(echo "$diff_link" | sed -re "s,^\[$prev\]:.*(http.*compare)/.+,[$version]: \1/$v$prev...master,")
 	local rel_section="## [$version]"
 
 	sed -i -e "/^## \[$prev\]/ {
@@ -72,7 +78,7 @@ case "$1" in
 "release")
 	make_release
 	;;
-"dev")
+"dev"|"bump")
 	bump_dev
 	;;
 esac
