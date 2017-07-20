@@ -30,7 +30,7 @@ make_release() {
 	local date version ver prev v
 
 	date=$(date +%Y-%m-%d)
-	version=$(current_version)
+	version=${1:-$(current_version)}
 	ver=$(preg_quote "$version")
 	prev=$(prev_version | preg_quote)
 
@@ -74,11 +74,12 @@ bump_dev() {
 	git commit -am "$version-dev"
 }
 
-case "$1" in
+command=$1; shift
+case "$command" in
 "release")
-	make_release
+	make_release "$@"
 	;;
 "dev"|"bump")
-	bump_dev
+	bump_dev "$@"
 	;;
 esac
