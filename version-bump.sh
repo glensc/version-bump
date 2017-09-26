@@ -74,7 +74,9 @@ bump_dev() {
 	git commit -am "$version-dev"
 }
 
-command=$1; shift
+command="$1"
+test -z "$command" || shift
+
 case "$command" in
 "release")
 	make_release "$@"
