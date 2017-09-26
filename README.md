@@ -17,6 +17,44 @@ So far I have not found project that is able to do:
 
 This project is my attempt to rectify the problem.
 
+## Examples
+
+An example how to use this tool GitLab CI.
+This will add `create release` manual job on `master` branch, when `played` will create next patch release.
+
+```yml
+create release:
+  stage: release
+  tags:
+    - chef-client
+  image: $CI_REGISTRY/docker-images/chef-client
+  when: manual
+  only:
+    - master
+  variables:
+    # ssh name where to push (may differ from http address)
+    CI_GIT_PUSH_SERVER=gitlab.example.org
+  before_script:
+    - git clone https://github.com/glensc/version-bump
+    - gem install --bindir=/usr/local/bin bump
+    - git config user.email "$GITLAB_USER_EMAIL"
+    - git config user.name "GitLab Autodeploy"
+    # reconfigure for push url
+    - git remote set-url --push origin git@${CI_GIT_PUSH_SERVER}:${CI_PROJECT_PATH}.git
+  script: |
+    set -x
+    # create new release
+    version-bump/version-bump.sh release
+    # push it out
+    git push origin refs/heads/$CI_COMMIT_REF_NAME refs/tags/*
+
+    # start new development
+    version-bump/version-bump.sh bump
+    # push it out
+    git push origin refs/heads/$CI_COMMIT_REF_NAME
+```
+
+
 ## Related
 
 Somehow related, similar projects or similar problems.
